@@ -2,49 +2,62 @@ import { useState, useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+const STATUS_CODE = {
+  pending: 'pending',
+  fulfilled: 'fulfilled',
+  rejected: 'rejected',
+};
+
 function App() {
-  const [book, setBook] = useState('');
+  const [book, setBook] = useState({});
   const [categories, setCategories] = useState([]);
-  const [authorName, setAuthorName] = useState('');
+  const [status, setStatus] = useState(null);
 
   useEffect(() => {
+    setStatus(STATUS_CODE.pending);
     fetch('/categories')
       .then((res) => res.json())
-      .then((data) => {
-        setCategories(data);
-        setBook(data[0].book);
-        setAuthorName(data[0].authorName);
+      .then((categoriesResponse) => {
+        setCategories(categoriesResponse);
+        setBook({
+          title: categoriesResponse[0].book,
+          author: categoriesResponse[0].authorName,
+        });
+        setStatus(STATUS_CODE.fulfilled);
       })
-      .catch((error) => console.log(`error`, error));
+      .catch(() => {
+        setStatus(STATUS_CODE.rejected);
+      });
   }, []);
 
   const handleCategory = (event) => {
     const category = event.target.value;
-    setBook(categories.find((item) => item.category === category).book);
-    setAuthorName(
-      categories.find((item) => item.category === category).authorName
-    );
+    const bookCategory = categories.find((item) => item.category === category);
+    if (bookCategory) {
+      setBook({ title: bookCategory.book, author: bookCategory.authorName });
+    }
   };
 
   const handleSubmit = () => {
     fetch(
       `/amazon-search?${new URLSearchParams({
-        book,
-        authorName,
-      })}`
-    )
-      .then((res) => res.json())
-      .then((data) => setCategories(data))
-      .catch((error) => console.log(`error`, error));
+        book: book.title,
+        authorName: book.author,
+      })}`,
+      { method: 'POST' }
+    );
   };
 
+  const isFulfilled = status === STATUS_CODE.fulfilled;
+  const isPending = status === STATUS_CODE.pending;
+
   return (
-    <div className="App">
-      <header className="App-header">
-        {categories.length ? (
+    <div className="app">
+      <main className="appMain">
+        {isFulfilled && (
           <>
-            <label className="label" htmlFor="categories">
-              Choose a category:
+            <label className="selectLabel" htmlFor="categories">
+              Choose a category and you will be redirected to the amazon book page
             </label>
             <select name="categories" id="categories" onChange={handleCategory}>
               {categories.map((item) => (
@@ -61,13 +74,17 @@ function App() {
               Go
             </button>
           </>
-        ) : (
+        )}
+        {!isFulfilled && (
           <>
-            <img src={logo} className="App-logo" alt="logo" />
-            <p>Loading...</p>
+            <img src={logo} className="appLogo" alt="logo" />
+              {isPending
+                ? <p>Loading...</p>
+                : <p className="errorMessage">Something went wrong please refresh the page</p>
+              }
           </>
         )}
-      </header>
+      </main>
     </div>
   );
 }

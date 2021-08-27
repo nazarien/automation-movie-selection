@@ -1,7 +1,3 @@
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-alert */
-/* eslint-disable no-console */
 const express = require('express');
 const path = require('path');
 const puppeteer = require('puppeteer');
@@ -10,15 +6,16 @@ const PORT = process.env.PORT || 3001;
 
 const app = express();
 
-async function retry(promiseFactory, retryCount) {
-  try {
-    return await promiseFactory();
-  } catch (error) {
-    if (retryCount <= 0) {
-      throw error;
-    }
-    return await retry(promiseFactory, retryCount - 1);
-  }
+async function getAuthorNames(browser, link) {
+  const tempPage = await browser.newPage();
+  await tempPage.goto(link);
+
+  const authorName = await tempPage.$eval(
+    '.authorName',
+    (name) => name.innerText,
+  );
+  await tempPage.close();
+  return authorName;
 }
 
 app.get('/categories', async (req, res) => {
@@ -31,20 +28,9 @@ app.get('/categories', async (req, res) => {
     const categories = await page.$$eval('.category__copy', (items) => items.map((item) => item.innerText.trim()));
     const allLinks = await page.$$eval('.category.clearFix > a', (links) => links.map((link) => link.href));
 
-    const authorNames = [];
+    const arrayOfPromises = allLinks.map((link) => getAuthorNames(browser, link));
 
-    // it takes lots of time to get all author names on separate pages
-    for (const link of allLinks) {
-      const tempPage = await browser.newPage();
-      await tempPage.goto(link);
-
-      const authorName = await tempPage.$eval(
-        '.authorName',
-        (name) => name.innerText,
-      );
-      authorNames.push(authorName);
-      await tempPage.close();
-    }
+    const authorNames = await Promise.all(arrayOfPromises);
 
     const categoriesWithData = categories.map((category, index) => ({
       category,
@@ -56,11 +42,12 @@ app.get('/categories', async (req, res) => {
 
     res.send(categoriesWithData);
   } catch (error) {
+    res.send(error);
     console.log('categories error', error);
   }
 });
 
-app.get('/amazon-search', async (req) => {
+app.post('/amazon-search', async (req) => {
   const { book, authorName } = req.query;
 
   const browser = await puppeteer.launch({
@@ -74,14 +61,11 @@ app.get('/amazon-search', async (req) => {
     const page = pages[0];
     await page.goto('https://www.amazon.com/', { timeout: 12000 });
 
-    // for those causes when script does not start, not sure if it's good idea to use retry function
-    await retry(async () => {
-      await page.waitForSelector('#twotabsearchtextbox', { timeout: 6000 });
-      await page.type(
-        '#twotabsearchtextbox',
-        `${book} ${authorName} Hardcover`,
-      );
-    }, 2);
+    await page.waitForSelector('#twotabsearchtextbox', { timeout: 6000 });
+    await page.type(
+      '#twotabsearchtextbox',
+      `${book} ${authorName} Hardcover`,
+    );
 
     await page.waitForSelector('#nav-search-submit-button', { timeout: 6000 });
     await Promise.all([
@@ -96,7 +80,6 @@ app.get('/amazon-search', async (req) => {
       ),
     ]);
 
-    // for those cases when there is no add to card button on product page
     try {
       await Promise.all([
         page.waitForNavigation(),
@@ -121,12 +104,12 @@ app.get('/amazon-search', async (req) => {
       }
     }
 
-    await page.waitForSelector('#hlb-view-cart-announce', { timeout: 6000 });
-
-    await Promise.all([
-      page.waitForNavigation(),
-      page.click('#hlb-view-cart-announce'),
-    ]);
+    try {
+      await Promise.all([
+        page.waitForNavigation(),
+        page.click('#hlb-view-cart-announce'),
+      ]);
+    } catch (error) {}
   } catch (error) {
     const page = await browser.newPage();
     try {

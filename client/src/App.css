@@ -1,19 +1,19 @@
-.App {
+.app {
   text-align: center;
 }
 
-.App-logo {
+.appLogo {
   height: 40vmin;
   pointer-events: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
+  .appLogo {
     animation: App-logo-spin infinite 20s linear;
   }
 }
 
-.App-header {
+.appMain {
   background-color: #282c34;
   min-height: 100vh;
   display: flex;
@@ -37,7 +37,7 @@
   }
 }
 
-.label {
+.selectLabel {
   margin-bottom: 10px;
 }
 
@@ -49,4 +49,8 @@
   padding: 15px 32px;
   font-size: 16px;
   margin-top: 10px;
+}
+
+.errorMessage {
+  color: rgb(174, 58, 58);;
 }

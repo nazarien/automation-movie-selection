@@ -8,12 +8,12 @@ body {
   margin: 0;
 }
 
-#notfound {
+#errorPageWrapper {
   position: relative;
   height: 100vh;
 }
 
-#notfound .notfound {
+#errorPageWrapper .errorPage {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -22,21 +22,21 @@ body {
           transform: translate(-50%, -50%);
 }
 
-.notfound {
+.errorPage {
   max-width: 520px;
   width: 100%;
   line-height: 1.4;
   text-align: center;
 }
 
-.notfound .notfound-404 {
+.errorPage .errorPageContent {
   position: relative;
   height: 200px;
   margin: 0px auto 20px;
   z-index: -1;
 }
 
-.notfound .notfound-404 h1 {
+.errorPage .errorPageContent h1 {
   font-family: 'Montserrat', sans-serif;
   font-size: 236px;
   font-weight: 200;
@@ -51,7 +51,7 @@ body {
           transform: translate(-50%, -50%);
 }
 
-.notfound .notfound-404 h2 {
+.errorPage .errorPageContent h2 {
   font-family: 'Montserrat', sans-serif;
   font-size: 28px;
   font-weight: 400;
@@ -68,7 +68,7 @@ body {
   top: 200px;
 }
 
-.notfound a {
+.errorPage a {
   font-family: 'Montserrat', sans-serif;
   display: inline-block;
   font-weight: 700;
@@ -82,29 +82,29 @@ body {
   transition: 0.2s all;
 }
 
-.notfound a:hover {
+.errorPage a:hover {
   color: #ff6300;
   background: #211b19;
 }
 
 @media only screen and (max-width: 767px) {
-  .notfound .notfound-404 h1 {
+  .errorPage .errorPageContent h1 {
     font-size: 148px;
   }
 }
 
 @media only screen and (max-width: 480px) {
-  .notfound .notfound-404 {
+  .errorPage .errorPageContent {
     height: 148px;
     margin: 0px auto 10px;
   }
-  .notfound .notfound-404 h1 {
+  .errorPage .errorPageContent h1 {
     font-size: 86px;
   }
-  .notfound .notfound-404 h2 {
+  .errorPage .errorPageContent h2 {
     font-size: 16px;
   }
-  .notfound a {
+  .errorPage a {
     padding: 7px 15px;
     font-size: 14px;
   }
