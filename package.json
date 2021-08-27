@@ -7,13 +7,32 @@
     "node": "15.13.0"
   },
   "scripts": {
-    "start": "node server/index.js",
-    "build": "cd client && npm install && npm run build"
+    "start": "concurrently \"node server/index.js\" \"cd client && yarn start\"",
+    "installDep": "yarn && cd client && yarn",
+    "dev": "node server/index.js",
+    "build": "cd client && yarn && yarn build"
+  },
+  "eslintConfig": {
+    "extends": "airbnb-base",
+    "env": {
+      "es6": true,
+      "browser": true
+    },
+    "rules": {
+      "no-return-await": "off"
+    }
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "puppeteer": "^10.2.0"
+  },
+  "devDependencies": {
+    "concurrently": "^6.2.1",
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.24.2"
   }
 }
